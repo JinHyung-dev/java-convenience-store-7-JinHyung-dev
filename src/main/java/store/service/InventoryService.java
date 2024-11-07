@@ -16,7 +16,7 @@ public class InventoryService {
 
     public static InventoryService getInstance() {
         if(instance == null) {
-            return new InventoryService();
+            instance = new InventoryService();
         }
         return instance;
     }
@@ -27,22 +27,28 @@ public class InventoryService {
         return products;
     }
 
-    //프로모션 진행중인 상품 중 일반 재고는 없는 경우, 상품 목록에 채워넣는 로직
     public void checkNonPromotionProduct(List<Product> products) {
-        Map<String, Long> productNameFrequency = products.stream()
-                .filter(product -> !product.getPromotionName().equals("null"))
-                .collect(Collectors.groupingBy(Product::getName, Collectors.counting()));
-
+        Map<String, Long> productNameFrequency = checkProductFrequency(products);
         productNameFrequency.forEach((productName, count) -> {
-            if(count == 1) { //프로모션 진행 중이면서 상품 목록에 1개만 있는 상품이 있을 경우
-                products.stream()
-                        .filter(product -> product.getName().equals(productName))
-                        .findFirst()
-                        .ifPresent(originalProduct ->
-                                products.add(new Product(productName, originalProduct.getPrice(), 0, "null")));
+            if(count == 1) {  //프로모션 진행 중이면서 상품 목록에 1개만 있는 상품
+                addSingleProduct(products, productName); //일반 상품 재고 0으로 목록에 추가
             }
         });
+    }
 
+    private void addSingleProduct(List<Product> products, String productName) {
+        products.stream()
+                .filter(product -> product.getName().equals(productName))
+                .findFirst()
+                .ifPresent(originalProduct ->
+                        products.add(new Product(productName, originalProduct.getPrice(), 0, "null")));
+    }
+
+    //프로모션 진행중인 상품의 빈도 체크
+    private Map<String, Long> checkProductFrequency(List<Product> products) {
+        return products.stream()
+                .filter(product -> !product.getPromotionName().equals("null"))
+                .collect(Collectors.groupingBy(Product::getName, Collectors.counting()));
     }
 
     private void checkInventoryLine(List<Product> products) {
