@@ -47,24 +47,17 @@ public class InventoryService {
 
     private void checkInventoryLine(List<Product> products) {
         try(BufferedReader bufferedReader = Files.newBufferedReader(Paths.get(PRODUCT_FILE_PATH))){
-            String line;
-            boolean isFirstLine = true;
-
-            while((line = bufferedReader.readLine()) != null) {
-                //첫 행 건너띄기
-                if(isFirstLine) {
-                    isFirstLine = false;
-                    continue;
-                }
-
-                String[] words = line.split(",");
-                Product product = new Product(words[0], Integer.parseInt(words[1]), Integer.parseInt(words[2]), words[3]);
-                products.add(product);
-
-            }
-
+            bufferedReader.lines()
+                    .skip(1) // 첫 행 건너뛰기
+                    .forEach(line -> addInventory(line, products));
         } catch (IOException e) {
             System.out.println("[ERROR] 재고를 파악할 수 없습니다.");
         }
+    }
+
+    private void addInventory(String line, List<Product> products) {
+        String[] words = line.split(",");
+        Product product = new Product(words[0], Integer.parseInt(words[1]), Integer.parseInt(words[2]), words[3]);
+        products.add(product);
     }
 }
