@@ -9,7 +9,6 @@ public class Product {
     private final int price;
     private int generalStock = 0;
     private int promotionStock = 0;
-    private String promotionName;
     private Optional<Promotion> promotion;
 
     public Product(String name, int price, int generalStock) {
