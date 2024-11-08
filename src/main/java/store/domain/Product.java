@@ -46,7 +46,7 @@ public class Product {
         if(promotion.isPresent()){
             return this.promotion.get().getName();
         }
-        return "No Promotion";
+        return "";
     }
 
     @Override
@@ -57,18 +57,35 @@ public class Product {
                 .append(decimalFormat.format(price)).append("원")
                 .append(" ");
 
-        quantityToString(builder);
+        if(promotion.isPresent()) {
+            promotionStockToString(builder);
+            promotionToString(builder);
+            return builder.toString();
+        }
+        generalStockToString(builder);
         promotionToString(builder);
 
         return builder.toString();
     }
 
-    private boolean isQuantityZero() {
+    private boolean isGeneralQuantityZero() {
         return generalStock == 0;
     }
 
-    private void quantityToString(StringBuilder builder) {
-        if(isQuantityZero()) {
+    private boolean isPromotionQuantityZero() {
+        return promotionStock == 0;
+    }
+
+    private void promotionStockToString(StringBuilder builder) {
+        if(isPromotionQuantityZero()) {
+            builder.append(OUT_OF_STOCK).append(" ");
+            return;
+        }
+        builder.append(promotionStock).append("개 ");
+    }
+
+    private void generalStockToString(StringBuilder builder) {
+        if(isGeneralQuantityZero()) {
             builder.append(OUT_OF_STOCK).append(" ");
             return;
         }

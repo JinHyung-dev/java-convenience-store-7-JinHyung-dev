@@ -92,7 +92,7 @@ public class InventoryService {
 
     private void addInventory(String line, List<Product> products) {
         String[] words = line.split(",");
-        if(words[3] != null) { // 프로모션 있을 경우
+        if(!words[3].equals("null")) { // 프로모션 있을 경우
             Promotion promotion = findPromotion(words[3]);
             Product product = new Product(words[0], Integer.parseInt(words[1]), Integer.parseInt(words[2]), promotion);
             products.add(product);
