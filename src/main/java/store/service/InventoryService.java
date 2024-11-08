@@ -18,6 +18,7 @@ public class InventoryService {
     private static final String PRODUCT_FILE_PATH = "src/main/resources/products.md";
     private static final String PROMOTION_FILE_PATH = "src/main/resources/promotions.md";
     private static InventoryService instance;
+    private static  List<Promotion> promotions;
 
     public static InventoryService getInstance() {
         if(instance == null) {
@@ -26,10 +27,10 @@ public class InventoryService {
         return instance;
     }
 
-    public List<Product> checkInventory() {
+    public List<Product> loadInventory() {
+        promotions = checkTodayPromotion(); // 유효 프로모션 저장
         List<Product> products = new ArrayList<>();
-        //TODO : 날짜 기점으로 프로모션 진행 여부 체크 추가 필요
-        checkInventoryLine(products);
+        checkInventoryLine(products); // 재고 목록 저장
         return products;
     }
 
@@ -59,13 +60,13 @@ public class InventoryService {
                 .filter(product -> product.getName().equals(productName))
                 .findFirst()
                 .ifPresent(originalProduct ->
-                        products.add(new Product(productName, originalProduct.getPrice(), 0, "null")));
+                        products.add(new Product(productName, originalProduct.getPrice(), 0, null)));
     }
 
     //프로모션 진행중인 상품의 빈도 체크
     private Map<String, Long> checkProductFrequency(List<Product> products) {
         return products.stream()
-                .filter(product -> !product.getPromotionName().equals("null"))
+                .filter(product -> product.getPromotion().isPresent())
                 .collect(Collectors.groupingBy(Product::getName, Collectors.counting()));
     }
 
@@ -91,8 +92,21 @@ public class InventoryService {
 
     private void addInventory(String line, List<Product> products) {
         String[] words = line.split(",");
-        Product product = new Product(words[0], Integer.parseInt(words[1]), Integer.parseInt(words[2]), words[3]);
+        if(words[3] != null) { // 프로모션 있을 경우
+            Promotion promotion = findPromotion(words[3]);
+            Product product = new Product(words[0], Integer.parseInt(words[1]), Integer.parseInt(words[2]), promotion);
+            products.add(product);
+            return;
+        } //프로모션 없을 경우
+        Product product = new Product(words[0], Integer.parseInt(words[1]), Integer.parseInt(words[2]));
         products.add(product);
+    }
+
+    private Promotion findPromotion(String name) {
+        return promotions.stream()
+                .filter(promo -> promo.getSamePromotion(name))
+                .findFirst()
+                .orElse(null);
     }
 
     private void addPromotion(String line, List<Promotion> promotions) {

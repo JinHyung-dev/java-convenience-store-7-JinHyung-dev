@@ -34,4 +34,8 @@ public class Promotion {
     public String getEndDate() {
         return endDate;
     }
+
+    public boolean getSamePromotion(String name) {
+        return this.name.equals(name);
+    }
 }
