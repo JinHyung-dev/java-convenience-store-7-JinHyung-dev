@@ -5,8 +5,8 @@ import java.util.Optional;
 
 public class Product {
     private final String OUT_OF_STOCK = "재고 없음";
-    private String name;
-    private int price;
+    private final String name;
+    private final int price;
     private int generalStock = 0;
     private int promotionStock = 0;
     private String promotionName;
@@ -36,6 +36,10 @@ public class Product {
 
     public int getGeneralStock() {
         return generalStock;
+    }
+
+    public int getPromotionStock() {
+        return promotionStock;
     }
 
     public String getPromotionName() {
