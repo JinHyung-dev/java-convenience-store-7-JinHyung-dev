@@ -1,8 +1,14 @@
 package store.service;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import store.domain.Promotion;
 
@@ -16,5 +22,18 @@ public class InventoryServiceTest {
 
         assertTrue(actualPromotions.stream().noneMatch(p -> p.getName().equals(excludedPromotion)),
                 "허용되지 않은 프로모션이 포함되었습니다: " + excludedPromotion);
+    }
+
+    @Test
+    void 없는물건_체크() {
+        Map<String, Integer> sampleCart = new HashMap<>();
+        sampleCart.put("그냥워터", 2);
+
+        OutputStream outputStream = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outputStream));
+
+        inventoryService.loadInventory(); //products 생성
+
+        assertThrows(IllegalArgumentException.class, () -> inventoryService.checkItems(sampleCart));
     }
 }
