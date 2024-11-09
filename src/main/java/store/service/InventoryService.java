@@ -19,6 +19,7 @@ public class InventoryService {
     private static final String PROMOTION_FILE_PATH = "src/main/resources/promotions.md";
     private static InventoryService instance;
     private static  List<Promotion> promotions;
+    private static List<Product> products;
 
     public static InventoryService getInstance() {
         if(instance == null) {
@@ -29,7 +30,7 @@ public class InventoryService {
 
     public List<Product> loadInventory() {
         promotions = checkTodayPromotion(); // 유효 프로모션 저장
-        List<Product> products = new ArrayList<>();
+        products = new ArrayList<>();
         checkInventoryLine(products); // 재고 목록 저장
         return products;
     }
@@ -47,6 +48,14 @@ public class InventoryService {
         List<Promotion> promotions = new ArrayList<>();
         checkPromotionLine(promotions); // 파일 읽고 진행중인 프로모션 저장
         return promotions;
+    }
+
+    public void checkItems(Map<String, Integer> cart) throws IllegalArgumentException{
+        products.forEach(product -> {
+            if(!cart.containsKey(product.getName())){
+                throw new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요.");
+            }
+        });
     }
 
     private LocalDateTime getToday() {
