@@ -1,8 +1,5 @@
 package store.view;
 
-import java.util.List;
-import store.domain.Product;
-
 public class OutputView {
     public void helloCustomer() {
         System.out.println("안녕하세요. W편의점입니다.");
@@ -11,5 +8,9 @@ public class OutputView {
 
     public void printProduct(String product) {
         System.out.println("- " + product);
+    }
+
+    public void noticePromotionIsNotAvailable(String name, int quantity) {
+        System.out.println("현재 " + name + " " + quantity + "개는 프로모션 할인이 적용되지 않습니다. 그래도 구매하시겠습니까? (Y/N)");
     }
 }
