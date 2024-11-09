@@ -67,6 +67,18 @@ public class Product {
         return builder.toString();
     }
 
+    public Optional<Promotion> getPromotion() {
+        return promotion;
+    }
+
+    public boolean hasEnoughGeneralStock(Integer quantity) {
+        return getGeneralStock()-quantity >= 0;
+    }
+
+    public boolean hasEnoughPromotionStock(Integer quantity) {
+        return getPromotionStock()-quantity >= 0;
+    }
+
     private boolean isGeneralQuantityZero() {
         return generalStock == 0;
     }
@@ -99,9 +111,5 @@ public class Product {
         if(hasPromotion()) {
             builder.append(getPromotionName());
         }
-    }
-
-    public Optional<Promotion> getPromotion() {
-        return promotion;
     }
 }
