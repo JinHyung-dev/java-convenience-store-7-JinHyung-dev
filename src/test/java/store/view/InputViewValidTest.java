@@ -10,10 +10,10 @@ public class InputViewValidTest {
     void 입력형식_테스트() {
         InputView inputView = new InputView();
         assertThrows(IllegalArgumentException.class, () -> {
-            inputView.validate("[tk");  // 유효하지 않은 입력값
+            inputView.validateItemQuantity("[tk");  // 유효하지 않은 입력값
         });
 
-        assertTrue(inputView.invalidFormat("[사이다-2]")); //유효 입력
-        assertTrue(inputView.invalidFormat("[사이다-2], [콜라-1]")); //유효 다중 입력
+        assertTrue(inputView.invalidItemQuantityFormat("[사이다-2]")); //유효 입력
+        assertTrue(inputView.invalidItemQuantityFormat("[사이다-2], [콜라-1]")); //유효 다중 입력
     }
 }
