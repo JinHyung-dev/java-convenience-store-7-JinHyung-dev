@@ -12,11 +12,10 @@ public class PurchaseService {
     }
 
     private String[] parseItems(String input) {
-        String cleanInput = input.replaceAll("[\\[\\]]", "");
-        if(cleanInput.contains(",")) {
+        if(input.contains(",")) {
             return input.split(",");
         }
-        return new String[]{cleanInput};
+        return new String[]{input};
     }
 
     private Map<String, Integer> makeShoppingCart(String[] items) {
@@ -29,8 +28,10 @@ public class PurchaseService {
     }
 
     private String[] parseQuantity(String item) {
-        String name = item.trim().substring(1, item.indexOf("-"));
-        String quantity = item.trim().substring(item.indexOf("-")+1, item.indexOf("]"));
+        String cleanInput = item.replaceAll("[\\[\\]]", "");
+        int dashIndex = cleanInput.indexOf("-");
+        String name = cleanInput.substring(0, dashIndex).trim();
+        String quantity = cleanInput.substring(dashIndex + 1).trim();
         return new String[]{name, quantity};
     }
 }
