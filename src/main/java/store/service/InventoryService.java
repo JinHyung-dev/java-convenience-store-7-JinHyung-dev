@@ -8,8 +8,10 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import store.domain.Product;
 import store.domain.Promotion;
@@ -28,8 +30,12 @@ public class InventoryService {
         return instance;
     }
 
+    public static List<Product> getProducts() {
+        return Collections.unmodifiableList(products);
+    }
+
     public List<Product> loadInventory() {
-        promotions = checkTodayPromotion(); // 유효 프로모션 저장
+        promotions = getTodayPromotion(); // 유효 프로모션 저장
         products = new ArrayList<>();
         checkInventoryLine(products); // 재고 목록 저장
         return products;
@@ -44,13 +50,13 @@ public class InventoryService {
         });
     }
 
-    public List<Promotion> checkTodayPromotion() {
+    public List<Promotion> getTodayPromotion() {
         List<Promotion> promotions = new ArrayList<>();
         checkPromotionLine(promotions); // 파일 읽고 진행중인 프로모션 저장
-        return promotions;
+        return Collections.unmodifiableList(promotions);
     }
 
-    public void checkItems(Map<String, Integer> cart) throws IllegalArgumentException{
+    public void isAvailableItem(Map<String, Integer> cart) throws IllegalArgumentException{
         products.forEach(product -> {
             if(!cart.containsKey(product.getName())){
                 throw new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요.");
@@ -58,6 +64,32 @@ public class InventoryService {
         });
     }
 
+    public Optional<Product> findProductByName(String name) {
+        return products.stream()
+                .filter(product -> product.getName().equals(name))
+                .findFirst();
+    }
+
+    public void checkInventoryStock(String itemName, Integer quantity) throws IllegalArgumentException{
+        Product target = findProductByName(itemName)
+                .orElseThrow(() -> new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요."));
+        if (target.getPromotion().isPresent()) { //프로모션 상품이면
+            if(checkPromotionStock(target, quantity)) {
+                return;
+            }
+        }
+        checkGeneralStock(target, quantity);
+    }
+
+    private boolean checkPromotionStock(Product product, Integer quantity) {
+        return product.hasEnoughPromotionStock(quantity);
+    }
+
+    private void checkGeneralStock(Product product, Integer quantity) throws IllegalArgumentException{
+        if(!product.hasEnoughGeneralStock(quantity)) {
+            throw new IllegalArgumentException("[ERROR] 재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
+        }
+    }
     private LocalDateTime getToday() {
 //        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 //        return localDateTime.format(formatter);
