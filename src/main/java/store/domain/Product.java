@@ -75,8 +75,8 @@ public class Product {
         return getGeneralStock()-quantity >= 0;
     }
 
-    public boolean hasEnoughPromotionStock(Integer quantity) {
-        return getPromotionStock()-quantity >= 0;
+    public boolean hasPromotionStock() {
+        return getPromotionStock() > 0;
     }
 
     private boolean isGeneralQuantityZero() {
