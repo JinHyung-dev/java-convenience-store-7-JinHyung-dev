@@ -10,7 +10,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import store.domain.Cart;
+import store.domain.Product;
 import store.domain.Promotion;
+import store.view.InputView;
+import store.view.OutputView;
 
 public class PromotionService {
     static final String PROMOTION_FILE_PATH = "src/main/resources/promotions.md";
@@ -33,13 +37,13 @@ public class PromotionService {
         try(BufferedReader bufferedReader = Files.newBufferedReader(Paths.get(PromotionService.PROMOTION_FILE_PATH))){
             bufferedReader.lines()
                     .skip(1) // 첫 행 건너뛰기
-                    .forEach(line -> addPromotion(line, PromotionService.promotions));
+                    .forEach(PromotionService::addPromotion);
         } catch (IOException e) {
             System.out.println("[ERROR] 재고를 파악할 수 없습니다.");
         }
     }
 
-    private static void addPromotion(String line, List<Promotion> promotions) {
+    private static void addPromotion(String line) {
         String[] words = line.trim().split(",");
         String startDate = words[3];
         String endDate = words[4];
@@ -61,8 +65,6 @@ public class PromotionService {
     }
 
     private static LocalDateTime getToday() {
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-//        return localDateTime.format(formatter);
         return DateTimes.now();
     }
 
@@ -85,5 +87,65 @@ public class PromotionService {
                 .filter(promotion -> promotion.getSamePromotion(name))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private int getBuyQuantityToGet(Product productHavePromotion) {
+        String promotionName = productHavePromotion.getPromotion().get().getName();
+        return findPromotion(promotionName).getBuy();
+    }
+
+    public void scanCartItemWithPromotion() {
+        List<Product> promotionCartProducts = Cart.getInstance().getPromotionCartProducts();
+        if(!promotionCartProducts.isEmpty()) {
+            checkCartBuyCondition(promotionCartProducts);
+        }
+    }
+
+    // get 조건 수량이 적은지 같은지 확인
+    private void checkCartBuyCondition(List<Product> promotionCartProducts) {
+        promotionCartProducts.forEach(cartProduct -> {
+            int buyQuantityToGet = getBuyQuantityToGet(cartProduct);
+            int result = Cart.getInstance().enoughBuyCondition(cartProduct, buyQuantityToGet);
+            noticePromotionChoice(cartProduct, result);
+        });
+    }
+
+    private void noticePromotionChoice(Product cartProduct, int result) {
+        String choiceYN = "";
+        if(result >= 0) { // 입력한 구매값이 buy 조건 충족
+            choiceYN = getAnswerForFreeGet(cartProduct);
+            doSomethingForFreeGet(choiceYN, cartProduct);
+        }
+        if(result < 0) { // 입력한 구매값이 buy 조건 불충족
+            int buyQuantityForNow = Cart.getInstance().getCart().get(cartProduct);
+            choiceYN = getAnswerForNoPromotion(cartProduct.getName(), buyQuantityForNow);
+            doSomethingForNoPromotion(choiceYN, cartProduct);
+        }
+    }
+
+    private String getAnswerForFreeGet(Product product) {
+        OutputView outputView = new OutputView();
+        InputView inputView =  new InputView();
+        outputView.printChoiceForFreeGet(product.getName());
+        return inputView.readChoice();
+    }
+
+    private void doSomethingForFreeGet(String answer, Product cartProduct) {
+        if(answer.equals("Y")) {
+            Cart.getInstance().addFreeGet(cartProduct);
+        }
+    }
+
+    private String getAnswerForNoPromotion(String name, int quantity) {
+        OutputView outputView = new OutputView();
+        InputView inputView =  new InputView();
+        outputView.printChoiceForNoPromotion(name, quantity);
+        return inputView.readChoice();
+    }
+
+    private void doSomethingForNoPromotion(String answer, Product cartProduct) {
+        if(answer.equals("N")) { //
+            Cart.getInstance().removeProduct(cartProduct);
+        }
     }
 }
