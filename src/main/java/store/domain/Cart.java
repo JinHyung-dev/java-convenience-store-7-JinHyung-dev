@@ -1,15 +1,19 @@
 package store.domain;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Cart {
     private static Cart instance;
     private final Map<Product, Integer> cart;
+    private final Map<Product, Integer> freeGet;
 
     public Cart() {
         this.cart = new HashMap<>();
+        this.freeGet = new HashMap<>();
     }
 
     public static Cart getInstance() {
@@ -27,15 +31,26 @@ public class Cart {
         cart.putIfAbsent(product, quantity);
     }
 
-    public void addOneItem(Product product) {
-        cart.replace(product, cart.get(product) + 1);
+    public void addFreeGet(Product product) {
+        freeGet.putIfAbsent(product, 1);
     }
 
     public void removeProduct(Product product) {
         cart.remove(product);
     }
 
-    public boolean hasThisProduct(Product product) {
-        return cart.containsKey(product);
+    public List<Product> getPromotionCartProducts() {
+        List<Product> promotionProducts = new ArrayList<>();
+        cart.forEach((product, integer) -> {
+            if(product.hasPromotionStock()) {
+                promotionProducts.add(product);
+            }
+        });
+        return promotionProducts;
+    }
+
+    public int enoughBuyCondition(Product product, int buyQuantityToGet) {
+        int buyQuantityForNow = cart.get(product);
+        return buyQuantityForNow - buyQuantityToGet;
     }
 }
