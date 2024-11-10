@@ -118,6 +118,7 @@
   ├── domain
   │   ├── Promotion.java        // 프로모션을 관리하는 도메인 객체
   │   ├── Product.java           // 일반 상품을 관리하는 도메인 객체
+  │   ├── Cart.java             // 카트를 관리하는 도메인 객체
   │   └── PromotionProduct.java   // 프로모션 상품을 정의하는 도메인 객체
   ├── service
   │   ├── ReceiptService.java      // 영수증 로직을 처리하는 서비스 클래스
