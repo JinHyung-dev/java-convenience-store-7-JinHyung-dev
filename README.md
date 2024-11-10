@@ -122,6 +122,7 @@
   ├── service
   │   ├── ReceiptService.java      // 영수증 로직을 처리하는 서비스 클래스
   │   ├── InventoryService.java  // 상품 재고 처리 로직을 처리하는 서비스 클래스
+  │   ├── PromotionService.java  // 프로모션 관련 로직을 처리하는 서비스 클래스
   │   ├── MemberDiscountService.java  // 멤버십 할인 로직을 처리하는 서비스 클래스
   │   └── PurchaseService.java   // 구매 로직을 처리하는 서비스 클래스
   ├── controller
