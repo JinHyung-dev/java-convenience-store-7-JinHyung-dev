@@ -8,12 +8,13 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import store.domain.Promotion;
 
 public class PromotionService {
     static final String PROMOTION_FILE_PATH = "src/main/resources/promotions.md";
-    static List<Promotion> promotions;
+    static final List<Promotion> promotions  = new ArrayList<>();
     static PromotionService instance;
 
     public static PromotionService getInstance() {
@@ -25,15 +26,14 @@ public class PromotionService {
     }
 
     public static void getTodayPromotion() {
-        List<Promotion> promotions = new ArrayList<>();
-        checkPromotionLine(promotions); // 파일 읽고 진행중인 프로모션 저장
+        checkPromotionLine(); // 파일 읽고 진행중인 프로모션 저장
     }
 
-    private static void checkPromotionLine(List<Promotion> promotions) {
+    private static void checkPromotionLine() {
         try(BufferedReader bufferedReader = Files.newBufferedReader(Paths.get(PromotionService.PROMOTION_FILE_PATH))){
             bufferedReader.lines()
                     .skip(1) // 첫 행 건너뛰기
-                    .forEach(line -> addPromotion(line, promotions));
+                    .forEach(line -> addPromotion(line, PromotionService.promotions));
         } catch (IOException e) {
             System.out.println("[ERROR] 재고를 파악할 수 없습니다.");
         }
@@ -74,6 +74,10 @@ public class PromotionService {
 
     private static LocalDateTime makeLocalDateTime(int year, int month, int dayOfMonth) {
         return LocalDateTime.of(year, month, dayOfMonth, 0, 0);
+    }
+
+    public List<Promotion> getPromotions() {
+        return Collections.unmodifiableList(promotions);
     }
 
     public Promotion findPromotion(String name) {
