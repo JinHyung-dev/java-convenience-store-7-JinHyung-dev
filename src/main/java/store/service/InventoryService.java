@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import store.domain.Cart;
 import store.domain.Product;
 import store.domain.Promotion;
 
@@ -29,7 +30,7 @@ public class InventoryService {
         return Collections.unmodifiableList(products);
     }
 
-    public List<Product> loadInventory() {
+    public static List<Product> loadInventory() {
         products = new ArrayList<>();
         checkInventoryLine(products); // 재고 목록 저장
         return products;
@@ -44,33 +45,19 @@ public class InventoryService {
         });
     }
 
-    public void isAvailableItem(Map<String, Integer> cart) throws IllegalArgumentException{
-        products.forEach(product -> {
-            if(!cart.containsKey(product.getName())){
-                throw new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요.");
-            }
-        });
-    }
-
-    public Optional<Product> findProductByName(String name) {
-        return products.stream()
+    public Optional<Product> findProductByName(String name) throws IllegalArgumentException {
+        return Optional.ofNullable(products.stream()
                 .filter(product -> product.getName().equals(name))
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요.")));
     }
 
-    public void checkInventoryStock(String itemName, Integer quantity) throws IllegalArgumentException{
-        Product target = findProductByName(itemName)
-                .orElseThrow(() -> new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요."));
-        if (target.getPromotion().isPresent()) { //프로모션 상품이면
-            if(checkPromotionStock(target, quantity)) {
-                return;
-            }
-        }
-        checkGeneralStock(target, quantity);
+    public void checkInventoryStock(Cart cart) throws IllegalArgumentException {
+        cart.getCart().forEach(this::checkGeneralStock);
     }
 
-    private boolean checkPromotionStock(Product product, Integer quantity) {
-        return product.hasEnoughPromotionStock(quantity);
+    private boolean checkPromotionStock(Product product) {
+        return product.hasPromotionStock();
     }
 
     private void checkGeneralStock(Product product, Integer quantity) throws IllegalArgumentException{
@@ -94,7 +81,7 @@ public class InventoryService {
                 .collect(Collectors.groupingBy(Product::getName, Collectors.counting()));
     }
 
-    private void checkInventoryLine(List<Product> products) {
+    private static void checkInventoryLine(List<Product> products) {
         try(BufferedReader bufferedReader = Files.newBufferedReader(Paths.get(PRODUCT_FILE_PATH))){
             bufferedReader.lines()
                     .skip(1) // 첫 행 건너뛰기
@@ -104,9 +91,9 @@ public class InventoryService {
         }
     }
 
-    private void addInventory(String line, List<Product> products) {
+    private static void addInventory(String line, List<Product> products) {
         String[] words = line.split(",");
-        PromotionService promotionService = new PromotionService();
+        PromotionService promotionService = PromotionService.getInstance();
         if(!words[3].equals("null")) { // 프로모션 있을 경우
             Promotion promotion = promotionService.findPromotion(words[3]);
             Product product = new Product(words[0], Integer.parseInt(words[1]), Integer.parseInt(words[2]), promotion);
