@@ -1,12 +1,12 @@
 package store.service;
 
-import java.util.HashMap;
-import java.util.Map;
+import store.domain.Cart;
+import store.domain.Product;
 import store.view.InputView;
 
 public class PurchaseService {
     private final InputView inputView = new InputView();
-    public Map<String, Integer> getItems() {
+    public Cart getItems() {
         String[] items = parseItems(inputView.readItem());
         return makeShoppingCart(items);
     }
@@ -18,16 +18,17 @@ public class PurchaseService {
         return new String[]{input};
     }
 
-    private Map<String, Integer> makeShoppingCart(String[] items) {
-        Map<String, Integer> cart = new HashMap<>();
+    public Cart makeShoppingCart(String[] items) throws IllegalArgumentException{
+        Cart cart = Cart.getInstance();
         for(String item : items) {
             String[] itemAndQuantity = parseQuantity(item);
-            cart.put(itemAndQuantity[0], Integer.parseInt(itemAndQuantity[1]));
+            Product product = InventoryService.getInstance().findProductByName(itemAndQuantity[0]).get(); // 존재하지 않는 상품이면 에러
+            cart.addNewProduct(product, Integer.parseInt(itemAndQuantity[1]));
         }
         return cart;
     }
 
-    private String[] parseQuantity(String item) {
+    public String[] parseQuantity(String item) {
         String cleanInput = item.replaceAll("[\\[\\]]", "");
         int dashIndex = cleanInput.indexOf("-");
         String name = cleanInput.substring(0, dashIndex).trim();
