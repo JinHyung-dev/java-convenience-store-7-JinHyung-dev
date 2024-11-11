@@ -1,12 +1,13 @@
 package store.domain;
 
 public enum MemberShip {
-    SILVER("SILVER", 30);
+    SILVER("SILVER", 0.3);
 
+    private final int MAX_DISCOUNT_AMOUNT = 8000;
     private final String name;
-    private final int discountPercent;
+    private final double discountPercent;
 
-    MemberShip(String name, int discountPercent) {
+    MemberShip(String name, double discountPercent) {
         this.name = name;
         this.discountPercent = discountPercent;
     }
@@ -15,11 +16,11 @@ public enum MemberShip {
         return name;
     }
 
-    public int getDiscountPercent() {
-        return discountPercent;
-    }
-
     public double applyDiscount(int price) {
-        return price * (1 - discountPercent / 100.0);
+        double result = price * (1 - discountPercent);
+        if(result < price - MAX_DISCOUNT_AMOUNT) {
+            result = price - MAX_DISCOUNT_AMOUNT;
+        }
+        return result;
     }
 }
