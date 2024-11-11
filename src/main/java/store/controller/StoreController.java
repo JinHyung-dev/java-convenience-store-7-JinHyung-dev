@@ -8,6 +8,7 @@ import store.service.MemberShipService;
 import store.service.PromotionService;
 import store.service.PurchaseService;
 import store.service.ReceiptService;
+import store.view.InputView;
 import store.view.OutputView;
 
 public class StoreController {
@@ -56,12 +57,13 @@ public class StoreController {
 
         printReceipt(priceByProduct);
 
-        //TODO : 또구매 선택 -> 재실행 또는 종료)
+        endStore();
     }
 
     private void updateInventory() {
         InventoryService inventoryService = InventoryService.getInstance();
         inventoryService.updateSoldStock(Cart.getInstance().getCart());
+        PromotionService.getInstance().updateFreeGiveStock(Cart.getInstance().getFreeGet());
     }
 
     private Integer applyMemberDiscount(Integer sum) {
@@ -72,5 +74,20 @@ public class StoreController {
     private void printReceipt(Map<Product, Integer> priceByProduct) {
         ReceiptService receiptService = new ReceiptService();
         receiptService.makeReceipt(priceByProduct);
+    }
+
+    public void endStore() {
+        outputView.printChoiceForOtherBuy();
+        InputView inputView = new InputView();
+        String choiceYN = inputView.readChoice();
+        if(choiceYN.equals("Y")) {
+            resetStore();
+            openStore();
+        }
+    }
+
+    private void resetStore() {
+        Cart.getInstance().clearFreeGet();
+        Cart.getInstance().clearCart();
     }
 }
