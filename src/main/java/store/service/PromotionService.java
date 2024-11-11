@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import store.domain.Cart;
 import store.domain.Product;
 import store.domain.Promotion;
@@ -101,7 +102,6 @@ public class PromotionService {
         }
     }
 
-    // get 조건 수량이 적은지 같은지 확인
     private void checkCartBuyCondition(List<Product> promotionCartProducts) {
         promotionCartProducts.forEach(cartProduct -> {
             int buyQuantityToGet = getBuyQuantityToGet(cartProduct);
@@ -147,5 +147,9 @@ public class PromotionService {
         if(answer.equals("N")) { //
             Cart.getInstance().removeProduct(cartProduct);
         }
+    }
+
+    public void updateFreeGiveStock(Map<Product, Integer> freeGet) {
+        freeGet.forEach((Product::reduceGivenPromotionStock));
     }
 }
