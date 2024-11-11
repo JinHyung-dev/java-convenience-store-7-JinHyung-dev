@@ -57,8 +57,8 @@ public class ReceiptService {
         int buyQuantity = Cart.getInstance().getCart().size();
         int totalBuyAmount = purchaseService.getSum(priceByProduct);
         int promotionDiscountAmount = calculatePromotionDiscount();
-        int memberDiscountAmount = (int) Math.round(MemberShip.SILVER.getDiscountAmount(totalBuyAmount));
-        int totalPayment = (int) Math.round(MemberShip.SILVER.applyDiscount(totalBuyAmount));
+        int memberDiscountAmount = (int) Math.round(MemberShip.SILVER.getDiscountAmount());
+        int totalPayment = totalBuyAmount - memberDiscountAmount;
         return new int[]{buyQuantity, totalBuyAmount, promotionDiscountAmount, memberDiscountAmount, totalPayment};
     }
 

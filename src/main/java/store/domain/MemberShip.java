@@ -6,6 +6,7 @@ public enum MemberShip {
     private final int MAX_DISCOUNT_AMOUNT = 8000;
     private final String name;
     private final double discountPercent;
+    private double discountAmount = 0;
 
     MemberShip(String name, double discountPercent) {
         this.name = name;
@@ -21,10 +22,11 @@ public enum MemberShip {
         if(result < price - MAX_DISCOUNT_AMOUNT) {
             result = price - MAX_DISCOUNT_AMOUNT;
         }
+        discountAmount = price - result;
         return result;
     }
 
-    public double getDiscountAmount(int price) {
-        return price - applyDiscount(price);
+    public double getDiscountAmount() {
+        return discountAmount;
     }
 }
