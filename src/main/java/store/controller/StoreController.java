@@ -1,8 +1,6 @@
 package store.controller;
 
-import java.util.List;
 import store.domain.Cart;
-import store.domain.Product;
 import store.service.InventoryService;
 import store.service.PromotionService;
 import store.service.PurchaseService;
@@ -10,15 +8,11 @@ import store.view.OutputView;
 
 public class StoreController {
     private final OutputView outputView = new OutputView();
-    private final PromotionService promotionService = PromotionService.getInstance();
 
     public void openStore() {
         outputView.helloCustomer(); //인사
         InventoryService inventoryService = InventoryService.getInstance();
-        List<Product> products = InventoryService.loadInventory(); //재고 파악
-
-        inventoryService.checkNonPromotionProduct(products); //일반 재고 0인 프로모션 상품도 출력을 위해 포함
-        products.forEach(product -> outputView.printProduct(product.toString())); //출력
+        inventoryService.printStock();
         selectItem(); //구매로직으로 이동
     }
 
@@ -26,8 +20,8 @@ public class StoreController {
         while (true) {
             try {
                 PurchaseService purchaseService = new PurchaseService();
-                Cart cart = purchaseService.getItems();
-                checkStock(cart);
+                purchaseService.getItems(); // 카트 생성
+                checkStock();
                 break;
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
@@ -35,15 +29,18 @@ public class StoreController {
         }
     }
 
-    private void checkStock(Cart cart) throws IllegalArgumentException{
+    public void checkStock() throws IllegalArgumentException{
         InventoryService inventoryService = InventoryService.getInstance();
-        inventoryService.checkInventoryStock(cart); // 재고 없으면 예외 발생 후 재입력
-        buyItems(cart);
+        inventoryService.checkInventoryStock(Cart.getInstance()); // 재고 없으면 예외 발생 후 재입력
+        applyPromotion();
     }
 
-    public void buyItems(Cart cart) {
-        //buy 조건 충족하는지 확인
+    public void applyPromotion() {
+        PromotionService.getInstance().scanCartItemWithPromotion();
+        applyBuy();
     }
 
-    //멤버십 체크
+    public void applyBuy() {
+
+    }
 }
