@@ -1,24 +1,37 @@
 package store.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import store.domain.Cart;
+import store.domain.Product;
 
 public class InventoryServiceTest {
     private InventoryService inventoryService;
     private PurchaseService purchaseService;
+    private final InputStream systemInBackup = System.in;
 
     @BeforeEach
     void 재고목록초기화() {
         inventoryService = InventoryService.getInstance();
         InventoryService.loadInventory();
+        purchaseService =  new PurchaseService();
+    }
+
+    @AfterEach
+    void 카트_초기화() {
+        Cart.getInstance().clearCart();
+        Cart.getInstance().clearFreeGet();
     }
 
     @Test
@@ -53,10 +66,10 @@ public class InventoryServiceTest {
 
     @Test
     void 프로모션_제품_입력시_일반재고_없으면_에러() {
-        purchaseService =  new PurchaseService();
-
         String input = "[오렌지주스-12]";
         purchaseService.getItems(input);
+
+        System.setIn(new ByteArrayInputStream("Y".getBytes()));
 
         assertThrows(IllegalArgumentException.class,
                 () -> inventoryService.checkInventoryStock(Cart.getInstance()));
@@ -64,8 +77,6 @@ public class InventoryServiceTest {
 
     @Test
     void 일반제품_입력시_일반재고_없으면_에러() {
-        purchaseService =  new PurchaseService();
-
         String input = "[비타민워터-7]";
         purchaseService.getItems(input);
 
@@ -76,7 +87,6 @@ public class InventoryServiceTest {
     @DisplayName("물 1개 구매, 재고 차감")
     @Test
     void 일반제품_일반재고_차감() {
-        purchaseService =  new PurchaseService();
         int expect = InventoryService.findProductByName("물").get().getGeneralStock() - 1;
 
         String input = "[물-1]";
@@ -89,4 +99,23 @@ public class InventoryServiceTest {
                 .findAny().get().getGeneralStock()).isEqualTo(expect);
     }
 
+    @Test
+    void 프로모션제품_일반프로모션재고_차감() {
+        Product target = InventoryService.findProductByName("감자칩").get();
+        int expectGeneral = target.getGeneralStock() - 1;
+        int expectPromotion = target.getPromotionStock() - 1;
+        purchaseService.getItems("[감자칩-1]");
+        System.setIn(new ByteArrayInputStream("Y".getBytes()));
+
+        PromotionService.getInstance().scanCartItemWithPromotion(); //프로모션 조건 스캔
+        inventoryService.updateSoldStock(Cart.getInstance().getCart());
+        PromotionService.getInstance().updateFreeGiveStock(Cart.getInstance().getFreeGet());
+        Product updatedProduct = InventoryService.getProducts().stream().filter(p -> p.getName().equals("감자칩")).findAny().get();
+
+        assertAll(
+                () -> assertThat(updatedProduct.getGeneralStock()).isEqualTo(expectGeneral),
+                () -> assertThat(updatedProduct.getPromotionStock()).isEqualTo(expectPromotion)
+        );
+
+    }
 }

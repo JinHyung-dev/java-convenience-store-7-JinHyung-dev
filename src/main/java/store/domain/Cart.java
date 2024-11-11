@@ -57,4 +57,12 @@ public class Cart {
         int buyQuantityForNow = cart.get(product);
         return buyQuantityForNow - buyQuantityToGet;
     }
+
+    public void clearFreeGet() {
+        freeGet.clear();
+    }
+
+    public void clearCart() {
+        cart.clear();
+    }
 }
