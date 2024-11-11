@@ -7,7 +7,7 @@ public class OutputView {
     }
 
     public void printProduct(String product) {
-        System.out.println("- " + product);
+        System.out.println(product);
     }
 
     public void printChoiceForFreeGet(String productName) {

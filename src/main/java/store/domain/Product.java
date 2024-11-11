@@ -50,21 +50,20 @@ public class Product {
 
     @Override
     public String toString() {
-        DecimalFormat decimalFormat = new DecimalFormat("#,##0");
         StringBuilder builder = new StringBuilder();
-        builder.append(name).append(" ")
-                .append(decimalFormat.format(price)).append("원")
-                .append(" ");
-
         if(promotion.isPresent()) {
-            promotionStockToString(builder);
-            promotionToString(builder);
-            return builder.toString();
+            productInfoToString(builder);
+            promotionProductToString(builder);
         }
+        productInfoToString(builder);
         generalStockToString(builder);
-        promotionToString(builder);
-
         return builder.toString();
+    }
+
+    private void promotionProductToString(StringBuilder builder) {
+        promotionStockToString(builder);
+        promotionNameToString(builder);
+        builder.append("\n");
     }
 
     public Optional<Promotion> getPromotion() {
@@ -77,6 +76,20 @@ public class Product {
 
     public boolean hasPromotionStock() {
         return getPromotionStock() > 0;
+    }
+
+    public boolean hasGeneralStock() {
+        return getGeneralStock() > 0;
+    }
+
+    public void updateZeroStock(int quantity) {
+        if(hasGeneralStock()) {
+            promotionStock = quantity;
+            return;
+        }
+        if(hasPromotionStock()) {
+            generalStock = quantity;
+        }
     }
 
     private boolean isGeneralQuantityZero() {
@@ -103,11 +116,19 @@ public class Product {
         builder.append(generalStock).append("개 ");
     }
 
+    private void productInfoToString(StringBuilder builder) {
+        DecimalFormat decimalFormat = new DecimalFormat("#,##0");
+        builder.append("- ")
+                .append(name).append(" ")
+                .append(decimalFormat.format(price)).append("원")
+                .append(" ");
+    }
+
     private boolean hasPromotion() {
         return !getPromotionName().equals("null");
     }
 
-    private void promotionToString(StringBuilder builder) {
+    private void promotionNameToString(StringBuilder builder) {
         if(hasPromotion()) {
             builder.append(getPromotionName());
         }

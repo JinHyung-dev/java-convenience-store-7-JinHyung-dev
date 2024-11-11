@@ -5,14 +5,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import store.domain.Cart;
 import store.domain.Product;
 import store.domain.Promotion;
+import store.view.OutputView;
 
 public class InventoryService {
     private static final String PRODUCT_FILE_PATH = "src/main/resources/products.md";
@@ -22,30 +20,17 @@ public class InventoryService {
     public static InventoryService getInstance() {
         if(instance == null) {
             instance = new InventoryService();
+            loadInventory();
         }
         return instance;
     }
 
-    public static List<Product> getProducts() {
-        return Collections.unmodifiableList(products);
-    }
-
-    public static List<Product> loadInventory() {
+    public static void loadInventory() {
         products = new ArrayList<>();
         checkInventoryLine(products); // 재고 목록 저장
-        return products;
     }
 
-    public void checkNonPromotionProduct(List<Product> products) {
-        Map<String, Long> productNameFrequency = checkProductFrequency(products);
-        productNameFrequency.forEach((productName, count) -> {
-            if(count == 1) {  //프로모션 진행 중이면서 상품 목록에 1개만 있는 상품
-                addSingleProduct(products, productName); //일반 상품 재고 0으로 목록에 추가
-            }
-        });
-    }
-
-    public Optional<Product> findProductByName(String name) throws IllegalArgumentException {
+    public static Optional<Product> findProductByName(String name) throws IllegalArgumentException {
         return Optional.ofNullable(products.stream()
                 .filter(product -> product.getName().equals(name))
                 .findFirst()
@@ -56,29 +41,15 @@ public class InventoryService {
         cart.getCart().forEach(this::checkGeneralStock);
     }
 
-    private boolean checkPromotionStock(Product product) {
-        return product.hasPromotionStock();
+    public void printStock() {
+        OutputView outputView = new OutputView();
+        products.forEach(product -> outputView.printProduct(product.toString())); //출력
     }
 
     private void checkGeneralStock(Product product, Integer quantity) throws IllegalArgumentException{
         if(!product.hasEnoughGeneralStock(quantity)) {
             throw new IllegalArgumentException("[ERROR] 재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
         }
-    }
-
-    private void addSingleProduct(List<Product> products, String productName) {
-        products.stream()
-                .filter(product -> product.getName().equals(productName))
-                .findFirst()
-                .ifPresent(originalProduct ->
-                        products.add(new Product(productName, originalProduct.getPrice(), 0, null)));
-    }
-
-    //프로모션 진행중인 상품의 빈도 체크
-    private Map<String, Long> checkProductFrequency(List<Product> products) {
-        return products.stream()
-                .filter(product -> product.getPromotion().isPresent())
-                .collect(Collectors.groupingBy(Product::getName, Collectors.counting()));
     }
 
     private static void checkInventoryLine(List<Product> products) {
@@ -92,16 +63,28 @@ public class InventoryService {
     }
 
     private static void addInventory(String line, List<Product> products) {
-        String[] words = line.split(",");
-        PromotionService promotionService = PromotionService.getInstance();
-        if(!words[3].equals("null")) { // 프로모션 있을 경우
-            Promotion promotion = promotionService.findPromotion(words[3]);
-            Product product = new Product(words[0], Integer.parseInt(words[1]), Integer.parseInt(words[2]), promotion);
-            products.add(product);
+        String[] productInfo = line.split(","); //products.md 항목 순서
+        Product product;
+        if (isAlreadyExist(productInfo[0])) {
+            product = findProductByName(productInfo[0]).get();
+            product.updateZeroStock(Integer.parseInt(productInfo[2]));
             return;
+        }
+        products.add(makeProductForInventory(productInfo));
+    }
+
+    private static Product makeProductForInventory(String[] productInfo) {
+        PromotionService promotionService = PromotionService.getInstance();
+        if (!productInfo[3].equals("null")) { // 프로모션 있을 경우
+            Promotion promotion = promotionService.findPromotion(productInfo[3]);
+            return new Product(productInfo[0], Integer.parseInt(productInfo[1]), Integer.parseInt(productInfo[2]), promotion);
         } //프로모션 없을 경우
-        Product product = new Product(words[0], Integer.parseInt(words[1]), Integer.parseInt(words[2]));
-        products.add(product);
+        return new Product(productInfo[0], Integer.parseInt(productInfo[1]), Integer.parseInt(productInfo[2]));
+    }
+
+    private static boolean isAlreadyExist(String lineOfProductName) {
+        return products.stream()
+                .anyMatch(product -> product.getName().equals(lineOfProductName));
     }
 
 }
