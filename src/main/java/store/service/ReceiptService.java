@@ -28,7 +28,7 @@ public class ReceiptService {
         builder.append(String.format("%-12s\t%-8d%-10s\n", "총구매액", totalNumbers[0], decimalFormat.format(totalNumbers[1])))
                 .append(String.format("%-12s\t\t\t%-8s\n", "행사할인", "-" + decimalFormat.format(totalNumbers[2])))
                 .append(String.format("%-12s\t\t\t%-8s\n", "멤버십할인", "-" + decimalFormat.format(totalNumbers[3])))
-                .append(String.format("%-12s\t\t\t%-8s\n", "내실돈", decimalFormat.format(totalNumbers[4])));
+                .append(String.format("%-12s\t\t\t%-8s", "내실돈", decimalFormat.format(totalNumbers[4])));
         return builder.toString();
     }
 
