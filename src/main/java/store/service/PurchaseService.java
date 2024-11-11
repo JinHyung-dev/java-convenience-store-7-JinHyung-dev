@@ -9,16 +9,21 @@ import store.view.InputView;
 public class PurchaseService {
     private final InputView inputView = new InputView();
 
-    public Cart getItems() {
-        String[] items = parseItems(inputView.readItem());
+    public Cart getItems(String input) {
+        String[] items = parseItems(input);
         return makeShoppingCart(items);
+    }
+
+    public String getCustomerItemPick() {
+        return inputView.readItem();
     }
 
     public Cart makeShoppingCart(String[] items) throws IllegalArgumentException{
         Cart cart = Cart.getInstance();
         for(String item : items) {
             String[] itemAndQuantity = parseQuantity(item);
-            Product product = InventoryService.getInstance().findProductByName(itemAndQuantity[0]).get(); // 존재하지 않는 상품이면 에러
+            InventoryService.getInstance();
+            Product product = InventoryService.findProductByName(itemAndQuantity[0]).get(); // 존재하지 않는 상품이면 에러
             cart.addNewProduct(product, Integer.parseInt(itemAndQuantity[1]));
         }
         return cart;
