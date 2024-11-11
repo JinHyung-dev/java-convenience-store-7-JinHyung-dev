@@ -36,12 +36,18 @@ public class InputView {
     }
 
     public String readChoice() {
-        String input = Console.readLine().toUpperCase();
-        validateChoice(input);
-        return input.trim();
+        while(true) {
+            try {
+                String input = Console.readLine().toUpperCase();
+                validateChoice(input);
+                return input.trim();
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
     }
 
-    private void validateChoice(String input) {
+    private void validateChoice(String input) throws IllegalArgumentException{
         if(isNull(input)) {
             throw new IllegalArgumentException("[ERROR] 잘못된 입력입니다. 다시 입력해 주세요.");
         }
