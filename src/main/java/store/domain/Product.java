@@ -53,7 +53,7 @@ public class Product {
         if(generalStock < 0) generalStock = 0;
     }
 
-    public void reducePromotionStock(int quantity) {
+    public void reduceGivenPromotionStock(int quantity) {
         promotionStock -= quantity;
         if(promotionStock < 0) promotionStock = 0;
     }
