@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
+import store.domain.Cart;
+import store.domain.Product;
 
 public class PurchaseServiceTest {
 
@@ -29,5 +32,12 @@ public class PurchaseServiceTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> purchaseService.makeShoppingCart(new String[]{"[그냥워터-2]"}));
+    }
+
+    @Test
+    void 결제금액계산() {
+        PurchaseService purchaseService = new PurchaseService();
+        Map<Product, Integer> priceByProduct = purchaseService.calculateMoney(Cart.getInstance().getCart());
+        Integer sum = purchaseService.getSum(priceByProduct);
     }
 }
