@@ -1,21 +1,17 @@
 package store.service;
 
+import java.util.HashMap;
+import java.util.Map;
 import store.domain.Cart;
 import store.domain.Product;
 import store.view.InputView;
 
 public class PurchaseService {
     private final InputView inputView = new InputView();
+
     public Cart getItems() {
         String[] items = parseItems(inputView.readItem());
         return makeShoppingCart(items);
-    }
-
-    private String[] parseItems(String input) {
-        if(input.contains(",")) {
-            return input.split(",");
-        }
-        return new String[]{input};
     }
 
     public Cart makeShoppingCart(String[] items) throws IllegalArgumentException{
@@ -34,5 +30,26 @@ public class PurchaseService {
         String name = cleanInput.substring(0, dashIndex).trim();
         String quantity = cleanInput.substring(dashIndex + 1).trim();
         return new String[]{name, quantity};
+    }
+
+    public Map<Product, Integer> calculateMoney(Map<Product, Integer> cart) {
+        Map<Product, Integer> priceByProduct = new HashMap<>();
+        cart.forEach(((product, quantity) -> {
+            int price = product.getPrice() * quantity;
+            priceByProduct.put(product, price);
+        }));
+        return priceByProduct;
+    }
+
+    public int getSum(Map<Product, Integer> priceByProduct) {
+        return priceByProduct.values().stream()
+                .mapToInt(Integer::intValue).sum();
+    }
+
+    private String[] parseItems(String input) {
+        if(input.contains(",")) {
+            return input.split(",");
+        }
+        return new String[]{input};
     }
 }
