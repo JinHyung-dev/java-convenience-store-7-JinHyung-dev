@@ -23,4 +23,8 @@ public enum MemberShip {
         }
         return result;
     }
+
+    public double getDiscountAmount(int price) {
+        return price - applyDiscount(price);
+    }
 }
