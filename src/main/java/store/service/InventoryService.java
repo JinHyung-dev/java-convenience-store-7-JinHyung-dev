@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import store.domain.Cart;
 import store.domain.Product;
@@ -30,6 +32,10 @@ public class InventoryService {
         checkInventoryLine(products); // 재고 목록 저장
     }
 
+    public static List<Product> getProducts() {
+        return Collections.unmodifiableList(products);
+    }
+
     public static Optional<Product> findProductByName(String name) throws IllegalArgumentException {
         return Optional.ofNullable(products.stream()
                 .filter(product -> product.getName().equals(name))
@@ -44,6 +50,10 @@ public class InventoryService {
     public void printStock() {
         OutputView outputView = new OutputView();
         products.forEach(product -> outputView.printProduct(product.toString())); //출력
+    }
+
+    public void updateSoldStock(Map<Product, Integer> cart) {
+        cart.forEach((Product::reduceSoldGeneralStock));
     }
 
     private void checkGeneralStock(Product product, Integer quantity) throws IllegalArgumentException{
@@ -86,5 +96,4 @@ public class InventoryService {
         return products.stream()
                 .anyMatch(product -> product.getName().equals(lineOfProductName));
     }
-
 }

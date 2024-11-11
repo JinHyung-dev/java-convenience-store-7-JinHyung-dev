@@ -48,6 +48,16 @@ public class Product {
         return "";
     }
 
+    public void reduceSoldGeneralStock(int quantity) {
+        generalStock -= quantity;
+        if(generalStock < 0) generalStock = 0;
+    }
+
+    public void reducePromotionStock(int quantity) {
+        promotionStock -= quantity;
+        if(promotionStock < 0) promotionStock = 0;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
