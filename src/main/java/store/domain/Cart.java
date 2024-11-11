@@ -27,6 +27,10 @@ public class Cart {
         return Collections.unmodifiableMap(cart);
     }
 
+    public Map<Product, Integer> getFreeGet() {
+        return Collections.unmodifiableMap(freeGet);
+    }
+
     public void addNewProduct(Product product, Integer quantity) {
         cart.putIfAbsent(product, quantity);
     }
